@@ -1,0 +1,53 @@
+# This is a basic workflow to help you get started with Actions
+
+name: SandboxCI
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the main branch
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    name: SwiftFormat
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+      
+      # Runs SwiftFormat
+      - uses: mtgto/swift-format-action@main
+        with:
+          configuration_file: .swift-format
+          all_files: false
+          auto_correct: true
+          max_warnings: -1
+
+      # Runs git
+      - name: Run git
+        run: |
+          git remote set-url origin https://github-actions:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}
+          git config --global user.name "${GITHUB_ACTOR}"
+          git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+          if(git diff --shortstat | grep '[0-9]'); then \
+            git add --all; \
+            git commit -m "Fixed auto-fixable by github-actions"; \
+            git push origin HEAD:${GITHUB_HEAD_REF}
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
