@@ -1,67 +1,67 @@
 import Foundation
 
-typealias MethodArg = Equatable & CustomDebugStringConvertible
-protocol MethodArgs: Equatable, CustomDebugStringConvertible {}
+public typealias MethodArg = Equatable & CustomDebugStringConvertible
+public protocol MethodArgs: Equatable, CustomDebugStringConvertible {}
 
-struct MethodArg0: MethodArgs {
-    var debugDescription: String {
+public struct MethodArg0: MethodArgs {
+    public var debugDescription: String {
         "none args"
     }
 }
 
-struct MethodArg1<A1: MethodArg>: MethodArgs {
+public struct MethodArg1<A1: MethodArg>: MethodArgs {
     let arg1: A1
 
-    init(_ arg1: A1) {
+    public init(_ arg1: A1) {
         self.arg1 = arg1
     }
 
-    var debugDescription: String {
+    public var debugDescription: String {
         String(reflecting: arg1)
     }
 }
 
-struct MethodArg2<A1: MethodArg, A2: MethodArg>: MethodArgs {
+public struct MethodArg2<A1: MethodArg, A2: MethodArg>: MethodArgs {
     let arg1: A1
     let arg2: A2
 
-    init(_ arg1: A1, _ arg2: A2) {
+    public init(_ arg1: A1, _ arg2: A2) {
         self.arg1 = arg1
         self.arg2 = arg2
     }
 
-    var debugDescription: String {
+    public var debugDescription: String {
         "\(String(reflecting: arg1)), \(String(reflecting: arg2))"
     }
 }
 
-struct MethodReturn<T> {
+public struct MethodReturn<T> {
     let value: T
 }
 
-class ExpectMethod<A: MethodArgs, R> {
-    typealias Args = A
-    typealias Return = MethodReturn<R>
+public class ExpectMethod<A: MethodArgs, R> {
+    public typealias Args = A
+    public typealias Return = MethodReturn<R>
 
-    var args: Args?
-    var ret: Return?
+    public var args: Args?
+    public var ret: Return?
 
-    func args(_ args: Args) -> Self {
+    public func args(_ args: Args) -> Self {
         self.args = args
         return self
     }
 
-    func andReturn(_ ret: R) -> Self {
+    public func andReturn(_ ret: R) -> Self {
         self.ret = Return(value: ret)
         return self
     }
 }
 
-class ExpectMethodCalls<A: MethodArgs, R> {
-    typealias ExpectMethodCall = ExpectMethod<A, R>
+public class ExpectMethodCalls<A: MethodArgs, R> {
+    public typealias ExpectMethodCall = ExpectMethod<A, R>
     var expectCalls = [ExpectMethodCall]()
 
-    func append(_ args: A) -> ExpectMethodCall {
+    public func append(_ args: A) -> ExpectMethodCall {
         let call = ExpectMethodCall().args(args)
         expectCalls.append(call)
         return call
@@ -71,7 +71,7 @@ class ExpectMethodCalls<A: MethodArgs, R> {
 struct MethodMock<A: MethodArgs, R> {
     var expectMethodCalls: ExpectMethodCalls<A, R>
 
-    func call(methodName: String, actualArgs: A) throws -> R {
+    public func call(methodName: String, actualArgs: A) throws -> R {
         let match = expectMethodCalls.expectCalls.first(where: {
             guard let args = $0.args else { return false }
             return (args == actualArgs)
@@ -89,22 +89,22 @@ struct MethodMock<A: MethodArgs, R> {
     }
 }
 
-struct MethodBuilder<A: MethodArgs, R> {
-    typealias ExpectCalls = ExpectMethodCalls<A, R>
+public struct MethodBuilder<A: MethodArgs, R> {
+    public typealias ExpectCalls = ExpectMethodCalls<A, R>
 
     let calls = ExpectCalls()
-    func args(_ args: A) -> ExpectCalls.ExpectMethodCall {
+    public func args(_ args: A) -> ExpectCalls.ExpectMethodCall {
         return calls.append(args)
     }
 
-    func mock() -> MethodMock<A, R> {
+    public func mock() -> MethodMock<A, R> {
         return MethodMock<A, R>(expectMethodCalls: calls)
     }
 }
 
-struct Method<A: MethodArgs, R> {
-    typealias Mock = MethodMock<A, R>
-    typealias ExpectCalls = ExpectMethodCalls<A, R>
-    typealias Args = A
-    typealias Builder = MethodBuilder<A, R>
+public struct Method<A: MethodArgs, R> {
+    public typealias Mock = MethodMock<A, R>
+    public typealias ExpectCalls = ExpectMethodCalls<A, R>
+    public typealias Args = A
+    public typealias Builder = MethodBuilder<A, R>
 }
